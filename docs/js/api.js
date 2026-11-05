@@ -2,8 +2,12 @@
 import { YEAR, isAddress } from './stats.js';
 
 export const CHAINS = {
-  eth: { name: 'Ethereum', base: 'https://eth.blockscout.com', explorer: 'https://eth.blockscout.com' },
-  base: { name: 'Base', base: 'https://base.blockscout.com', explorer: 'https://base.blockscout.com' },
+  eth: { name: 'Ethereum', symbol: 'ETH', guzzler: 0.25, base: 'https://eth.blockscout.com', explorer: 'https://eth.blockscout.com' },
+  base: { name: 'Base', symbol: 'ETH', guzzler: 0.01, base: 'https://base.blockscout.com', explorer: 'https://base.blockscout.com' },
+  arbitrum: { name: 'Arbitrum', symbol: 'ETH', guzzler: 0.01, base: 'https://arbitrum.blockscout.com', explorer: 'https://arbitrum.blockscout.com' },
+  optimism: { name: 'Optimism', symbol: 'ETH', guzzler: 0.01, base: 'https://explorer.optimism.io', explorer: 'https://explorer.optimism.io' },
+  polygon: { name: 'Polygon', symbol: 'POL', guzzler: 50, base: 'https://polygon.blockscout.com', explorer: 'https://polygon.blockscout.com' },
+  gnosis: { name: 'Gnosis', symbol: 'xDAI', guzzler: 5, base: 'https://gnosisscan.io', explorer: 'https://gnosisscan.io' },
 };
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));

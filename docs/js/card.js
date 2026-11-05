@@ -36,7 +36,7 @@ export function drawCard(canvas, r, { chainName, name } = {}) {
 
   const stats = [];
   if (r.totalCount) stats.push(['Transactions', `${r.totalCount.toLocaleString('en-US')}${r.totalComplete ? '' : '+'}`]);
-  if (r.sentCount) stats.push(['Gas spent', `${r.sentComplete ? '' : '>'}${r.gasEth} ETH`]);
+  if (r.sentCount) stats.push(['Gas spent', `${r.sentComplete ? '' : '>'}${r.gasEth} ${r.symbol || 'ETH'}`]);
   if (r.busiestMonth) stats.push(['Busiest month', r.busiestMonth.name]);
   if (r.topTokens?.length) stats.push(['Top token', r.topTokens[0].symbol]);
   if (r.topCounterparty) stats.push(['Most used', r.topCounterparty.label || shortAddr(r.topCounterparty.hash)]);

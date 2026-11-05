@@ -1,5 +1,5 @@
 // Run the real recap from the command line, same code the site uses.
-// usage: node scripts/recap.mjs <address|name.eth> [eth|base]
+// usage: node scripts/recap.mjs <address|name.eth> [eth|base|arbitrum|optimism|polygon|gnosis]
 import { resolveAddress, fetchWalletData, CHAINS } from '../docs/js/api.js';
 import { computeRecap } from '../docs/js/stats.js';
 
@@ -16,5 +16,5 @@ const data = await fetchWalletData(address, chain, {
 process.stderr.write('\n');
 console.error(`fetched: ${data.sentTxs.length} sent, ${data.allTxs.length} all, ${data.transfers.length} transfers`);
 
-const recap = computeRecap({ address, ...data });
+const recap = computeRecap({ address, ...data, symbol: CHAINS[chain].symbol, guzzler: CHAINS[chain].guzzler });
 console.log(JSON.stringify(recap, null, 2));

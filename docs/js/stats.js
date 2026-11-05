@@ -66,7 +66,7 @@ function topN(map, n) {
  * @param {object[]} input.transfers   token transfers the wallet initiated
  */
 export function computeRecap({ address, sentTxs = [], allTxs = [], allComplete = false,
-  sentComplete = false, transfers = [], year = YEAR }) {
+  sentComplete = false, transfers = [], year = YEAR, symbol = 'ETH', guzzler = 0.25 }) {
   const me = lc(address);
   const sent = sentTxs.filter((t) => inYear(t.timestamp, year) && lc(t.from?.hash) === me);
   // sent txs are a subset of all txs; union by hash so a capped "all" list never undercounts
@@ -97,6 +97,7 @@ export function computeRecap({ address, sentTxs = [], allTxs = [], allComplete =
   const tokens = new Map();
   const tokenMeta = new Map();
   for (const tr of transfers) {
+    if (isSpamToken(tr.token)) continue;
     if (!inYear(tr.timestamp, year) || !tr.token) continue;
     const k = lc(tr.token.address_hash || tr.token.address);
     tokens.set(k, (tokens.get(k) || 0) + 1);
@@ -130,6 +131,8 @@ export function computeRecap({ address, sentTxs = [], allTxs = [], allComplete =
     topCounterparty: topCp ? { ...labels.get(topCp[0]), count: topCp[1] } : null,
     distinctCounterparties: counterparties.size,
     firstTx,
+    symbol,
+    guzzler,
   };
   recap.persona = persona(recap);
   return recap;
@@ -138,12 +141,19 @@ export function computeRecap({ address, sentTxs = [], allTxs = [], allComplete =
 /**
  * Deterministic persona from the recap. First matching rule wins.
  */
+// Spam airdrops fake Transfer events "from" big wallets. Drop the obvious ones.
+const SPAM = /(https?:|www\.|\.(com|io|net|org|xyz|website|site|app|top|gift|live|pro|vip|me|fi)\b|t\.me|claim|airdrop|reward|visit|voucher|bonus|\p{Extended_Pictographic})/iu;
+export function isSpamToken(token = {}) {
+  if (token.reputation && token.reputation !== 'ok') return true;
+  return SPAM.test(`${token.symbol || ''} ${token.name || ''}`);
+}
+
 export function persona(r) {
   const gas = Number(formatEth(r.gasWei || 0, 6).replace('<', ''));
   const sent = r.sentCount || 0;
   if (sent === 0) return { label: 'Ghost', blurb: 'Not a single outgoing tx this year. Silent, patient, unbothered.' };
   if (sent >= 500 || (sent >= 200 && r.distinctTokens >= 15)) return { label: 'Degen', blurb: 'You clicked "confirm" more than most people blink.' };
-  if (gas >= 0.25) return { label: 'Gas Guzzler', blurb: 'Validators thank you for your service.' };
+  if (gas >= (r.guzzler ?? 0.25)) return { label: 'Gas Guzzler', blurb: 'Validators thank you for your service.' };
   if (r.distinctCounterparties >= 25) return { label: 'Explorer', blurb: 'New contract, who dis? You got around.' };
   if (sent <= 10) return { label: 'Diamond Hands', blurb: 'Barely moved. Conviction or a lost seed phrase — we won\'t ask.' };
   if (r.distinctTokens >= 8) return { label: 'Token Collector', blurb: 'A little bit of everything in that bag.' };
@@ -154,7 +164,7 @@ export function persona(r) {
 export function shareText(r, chainName, url) {
   const lines = [`My ${r.year} Wallet Wrapped on ${chainName}:`];
   if (r.totalCount) lines.push(`• ${r.totalCount}${r.totalComplete ? '' : '+'} transactions`);
-  if (r.sentCount) lines.push(`• ${r.sentComplete ? '' : '>'}${r.gasEth} ETH spent on gas`);
+  if (r.sentCount) lines.push(`• ${r.sentComplete ? '' : '>'}${r.gasEth} ${r.symbol || 'ETH'} spent on gas`);
   if (r.busiestMonth) lines.push(`• Busiest month: ${r.busiestMonth.name}`);
   if (r.topTokens?.length) lines.push(`• Top token: ${r.topTokens[0].symbol}`);
   lines.push(`Persona: ${r.persona.label}`);

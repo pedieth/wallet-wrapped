@@ -98,3 +98,18 @@ test('persona rules are deterministic and ordered', () => {
   assert.equal(persona({ ...base, sentCount: 40, distinctTokens: 9 }).label, 'Token Collector');
   assert.equal(persona({ ...base, sentCount: 40 }).label, 'Steady Stacker');
 });
+
+test('gas uses the chain native symbol and threshold', async () => {
+  const { persona, shareText } = await import('../docs/js/stats.js');
+  const r = { sentCount: 50, gasWei: '20000000000000000', gasEth: '0.02', sentComplete: true, symbol: 'POL', guzzler: 50, year: 2026, persona: { label: 'x' } };
+  assert.notEqual(persona(r).label, 'Gas Guzzler');
+  assert.equal(persona({ ...r, symbol: 'ETH', guzzler: 0.01 }).label, 'Gas Guzzler');
+  assert.match(shareText(r, 'Polygon', 'u'), /0\.02 POL/);
+});
+
+test('spam tokens are filtered', async () => {
+  const { isSpamToken } = await import('../docs/js/stats.js');
+  assert.equal(isSpamToken({ symbol: 'optibase.website 🟢', name: 'claim airdrop' }), true);
+  assert.equal(isSpamToken({ symbol: 'USDC', name: 'USD Coin' }), false);
+  assert.equal(isSpamToken({ symbol: 'POOL', name: 'PoolTogether' }), false);
+});

@@ -35,7 +35,7 @@ input#addr {
   border: 1px solid #2c2140; background: #150d24; color: var(--fg); outline: none;
 }
 input#addr:focus { border-color: var(--g2); }
-.chains { display: flex; gap: 8px; }
+.chains { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
 .chains label { flex: 1; }
 .chains input { display: none; }
 .chains span {

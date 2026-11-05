@@ -39,7 +39,7 @@ async function run(input, chain) {
         $('#bar-fill').style.width = `${Math.round(f * 100)}%`;
       },
     });
-    const recap = computeRecap({ address, ...data });
+    const recap = computeRecap({ address, ...data, symbol: CHAINS[chain].symbol, guzzler: CHAINS[chain].guzzler });
     renderStory(recap, { chain, name, rateLimited: data.rateLimited, shareUrl: url.toString() });
   } catch (e) {
     console.error(e);
@@ -72,7 +72,7 @@ function slidesFor(r, ctx) {
     s.push({ a: '#f59e0b', b: '#ff3d8b', html: `
       <p class="eyebrow">Gas</p>
       <p class="big">${r.sentComplete ? '' : '>'}${esc(r.gasEth)}</p>
-      <p>ETH burned on fees across ${fmt(r.sentCount)}${r.sentComplete ? '' : '+'} transactions you sent.</p>
+      <p>${esc(r.symbol || 'ETH')} burned on fees across ${fmt(r.sentCount)}${r.sentComplete ? '' : '+'} transactions you sent.</p>
       ${partial}` });
   }
 
