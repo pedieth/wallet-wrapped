@@ -158,6 +158,7 @@ export function shareText(r, chainName, url) {
   if (r.busiestMonth) lines.push(`• Busiest month: ${r.busiestMonth.name}`);
   if (r.topTokens?.length) lines.push(`• Top token: ${r.topTokens[0].symbol}`);
   lines.push(`Persona: ${r.persona.label}`);
+  if (r.coveredFrom) lines.push(`(stats since ${r.coveredFrom})`);
   lines.push('', url);
   return lines.join('\n');
 }
