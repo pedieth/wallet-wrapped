@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Wallet Wrapped 2026</title>
+  <meta name="description" content="Your 2026 on-chain year in review. Paste a wallet, get your recap.">
+  <meta property="og:title" content="Wallet Wrapped 2026">
+  <meta property="og:description" content="Your 2026 on-chain year in review, Ethereum and Base.">
+  <meta name="theme-color" content="#0b0614">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎁</text></svg>">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <main id="app">
+    <section id="start" class="screen">
+      <p class="eyebrow">2026 on-chain recap</p>
+      <h1>Wallet<br><span class="grad">Wrapped</span></h1>
+      <form id="form" autocomplete="off">
+        <input id="addr" name="address" placeholder="0x… or name.eth" spellcheck="false" required>
+        <div class="chains" role="radiogroup" aria-label="Chain">
+          <label><input type="radio" name="chain" value="eth" checked><span>Ethereum</span></label>
+          <label><input type="radio" name="chain" value="base"><span>Base</span></label>
+        </div>
+        <button type="submit">Unwrap my year</button>
+      </form>
+      <p id="error" class="error" hidden></p>
+      <p class="hint">Read-only. Nothing to connect, no keys. Data from public Blockscout explorers.</p>
+    </section>
+
+    <section id="loading" class="screen" hidden>
+      <p class="eyebrow" id="load-label">Loading…</p>
+      <div class="bar"><div id="bar-fill"></div></div>
+      <p class="hint">Paging through the explorer politely. Big wallets take a minute.</p>
+    </section>
+
+    <section id="story" hidden>
+      <div class="progress" id="dots"></div>
+      <div id="slides"></div>
+      <button class="nav prev" id="prev" aria-label="Previous">‹</button>
+      <button class="nav next" id="next" aria-label="Next">›</button>
+    </section>
+  </main>
+
+  <footer>
+    Built by <a href="https://github.com/pedieth" target="_blank" rel="noopener">pedieth</a>
+    · <a href="https://x.com/Pedi_eth" target="_blank" rel="noopener">@Pedi_eth</a>
+    · data: <a href="https://www.blockscout.com/" target="_blank" rel="noopener">Blockscout</a>
+  </footer>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
