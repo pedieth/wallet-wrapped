@@ -75,6 +75,7 @@ button[type=submit], .btn {
               radial-gradient(circle at 80% 70%, var(--b, var(--g2)), transparent 50%);
 }
 .slide .big { font-size: clamp(56px, 20vw, 104px); font-weight: 900; line-height: .95; letter-spacing: -.04em; margin: 0; word-break: break-word; }
+.slide .hero { font-size: clamp(44px, 13vw, 72px); font-weight: 900; line-height: .95; letter-spacing: -.03em; margin: 0; }
 .slide .mid { font-size: clamp(30px, 9vw, 44px); font-weight: 850; line-height: 1.05; margin: 0; word-break: break-word; }
 .slide p { margin: 0; font-size: 18px; line-height: 1.4; }
 .slide .sub { color: var(--muted); font-size: 15px; }

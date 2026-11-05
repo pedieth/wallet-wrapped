@@ -56,7 +56,7 @@ function slidesFor(r, ctx) {
   s.push({ a: '#ff3d8b', b: '#8b5cf6', html: `
     <p class="eyebrow">${esc(chainName)} · ${r.year}</p>
     <p class="mid">${esc(who)}</p>
-    <p class="big grad">Your year, wrapped.</p>
+    <p class="hero grad">Your year,<br>wrapped.</p>
     <p class="sub">Tap or swipe →</p>` });
 
   if (r.totalCount) {
