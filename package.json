@@ -1,0 +1,11 @@
+{
+  "name": "wallet-wrapped",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "scripts": {
+    "test": "node --test",
+    "start": "npx serve docs",
+    "recap": "node scripts/recap.mjs"
+  }
+}
