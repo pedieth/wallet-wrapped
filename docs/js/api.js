@@ -35,14 +35,26 @@ async function getJSON(url, { retries = 4 } = {}) {
   }
 }
 
-/** Resolve an ENS name via Blockscout search, or validate a 0x address. */
+/** Resolve an ENS name to an address, or validate a 0x address. */
 export async function resolveAddress(input, chain = 'eth') {
   const q = String(input || '').trim();
   if (isAddress(q)) return q;
   if (!/\.eth$/i.test(q)) return null;
-  // ENS lives on mainnet; resolve there regardless of the selected chain
+  const name = q.toLowerCase();
+
+  // ENS lives on mainnet; resolve there regardless of the selected chain.
+  // Primary: a dedicated ENS resolver (covers names Blockscout search misses).
+  try {
+    const res = await fetch(`https://api.ensideas.com/ens/resolve/${encodeURIComponent(name)}`, { headers: { accept: 'application/json' } });
+    if (res.ok) {
+      const d = await res.json();
+      if (d && isAddress(d.address)) return d.address;
+    }
+  } catch { /* fall through to Blockscout */ }
+
+  // Fallback: Blockscout search.
   const data = await getJSON(`${CHAINS.eth.base}/api/v2/search?q=${encodeURIComponent(q)}`);
-  const hit = (data?.items || []).find((it) => it.type === 'ens_domain' && it.ens_info?.name?.toLowerCase() === q.toLowerCase());
+  const hit = (data?.items || []).find((it) => it.type === 'ens_domain' && it.ens_info?.name?.toLowerCase() === name);
   return hit?.address_hash || hit?.address || null;
 }
 
