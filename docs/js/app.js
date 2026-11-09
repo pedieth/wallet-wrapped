@@ -144,6 +144,7 @@ function renderStory(r, ctx) {
   $('#prev').onclick = () => go(i - 1);
   $('#next').onclick = () => go(i + 1);
   document.onkeydown = (e) => {
+    if (e.target.closest && e.target.closest('input, textarea')) return;
     if (e.key === 'ArrowRight') go(i + 1);
     if (e.key === 'ArrowLeft') go(i - 1);
   };
