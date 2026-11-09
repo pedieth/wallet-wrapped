@@ -110,8 +110,9 @@ function slidesFor(r, ctx) {
     <p class="sub">${esc(r.persona.blurb)}</p>
     <canvas id="card" width="1080" height="1080"></canvas>
     <div class="actions">
+      <button class="btn ghost" id="share" type="button" hidden>Share image</button>
       <a class="btn ghost" id="dl" download="wallet-wrapped-${r.year}.png" href="#">Download PNG</a>
-      <a class="btn" target="_blank" rel="noopener" href="https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}">Share on X</a>
+      <a class="btn" id="tweet" target="_blank" rel="noopener" href="https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}">Share on X</a>
     </div>
     <a class="hint" href="./">↺ Try another wallet</a>` });
   return s;
@@ -129,6 +130,23 @@ function renderStory(r, ctx) {
   $('#dl').addEventListener('click', (e) => {
     e.currentTarget.href = canvas.toDataURL('image/png');
   });
+
+  // Native share sheet with the actual image, where the browser supports it.
+  const toFile = () => new Promise((res) => canvas.toBlob(
+    (b) => res(b && new File([b], `wallet-wrapped-${r.year}.png`, { type: 'image/png' })), 'image/png'));
+  const shareBtn = $('#share');
+  const probe = typeof File !== 'undefined' && new File([], 'x.png', { type: 'image/png' });
+  if (navigator.canShare && probe && navigator.canShare({ files: [probe] })) {
+    shareBtn.hidden = false;
+    shareBtn.addEventListener('click', async () => {
+      const file = await toFile();
+      if (!file) return;
+      const url = ctx.shareUrl.startsWith(SITE) ? ctx.shareUrl : SITE;
+      try {
+        await navigator.share({ files: [file], text: shareText(r, CHAINS[ctx.chain].name, url) });
+      } catch { /* user dismissed */ }
+    });
+  }
 
   const els = [...document.querySelectorAll('.slide')];
   const dots = [...document.querySelectorAll('#dots i')];
