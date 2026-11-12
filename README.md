@@ -2,7 +2,7 @@
 
 Spotify Wrapped, but for your wallet. Paste an address (or an ENS name), pick a chain (Ethereum, Base, Arbitrum, Optimism, Polygon or Gnosis), and flip through your 2026 on-chain year: transactions, gas burned, busiest day and month, the tokens you moved most, the contract you kept going back to, and a persona. The last slide is a share card you can download or post.
 
-Site: https://pedieth.github.io/wallet-wrapped/ (once Pages is enabled)
+Site: https://pedieth.github.io/wallet-wrapped/
 
 It's a static page. No backend, no wallet connect, no API keys.
 
