@@ -14,9 +14,23 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 export class RateLimited extends Error {}
 
+// fetch with a deadline; a dropped connection is retried like a 5xx instead of killing the whole recap
+async function fetchT(url, ms = 15000, opts = {}) {
+  const ac = new AbortController();
+  const t = setTimeout(() => ac.abort(), ms);
+  try { return await fetch(url, { ...opts, signal: ac.signal }); } finally { clearTimeout(t); }
+}
+
 async function getJSON(url, { retries = 4 } = {}) {
   for (let i = 0; ; i++) {
-    const res = await fetch(url, { headers: { accept: 'application/json' } });
+    let res;
+    try {
+      res = await fetchT(url, 15000, { headers: { accept: 'application/json' } });
+    } catch (e) {
+      if (i >= retries) throw new Error('the explorer did not answer (network error)');
+      await sleep(Math.min(1500 * 2 ** i, 15000));
+      continue;
+    }
     if (res.status === 429 || res.status >= 500) {
       if (i >= retries) {
         if (res.status === 429) throw new RateLimited('Blockscout rate limit hit');
@@ -36,24 +50,39 @@ async function getJSON(url, { retries = 4 } = {}) {
 }
 
 /** Resolve an ENS name to an address, or validate a 0x address. */
+/** Clean what people paste: "@Nick.ETH ", "nick" -> "nick.eth". Any dotted ENS name is allowed (.base.eth, .xyz, subnames). */
+export function normalizeName(input) {
+  let q = String(input || '').trim().replace(/^@/, '').replace(/\s+/g, '').replace(/[\u3002\uff0e\uff61]/g, '.').toLowerCase();
+  if (!q || isAddress(q)) return q;
+  if (!q.includes('.')) q += '.eth';
+  return /^[^./]+(\.[^./]+)+$/.test(q) ? q : '';
+}
+
+async function viaResolver(url, pick) {
+  const res = await fetchT(url, 8000, { headers: { accept: 'application/json' } });
+  if (!res.ok) throw new Error(String(res.status));
+  const a = pick(await res.json());
+  if (!isAddress(a)) throw new Error('no address');
+  return a;
+}
+
 export async function resolveAddress(input, chain = 'eth') {
-  const q = String(input || '').trim();
-  if (isAddress(q)) return q;
-  if (!/\.eth$/i.test(q)) return null;
-  const name = q.toLowerCase();
+  const raw = String(input || '').trim();
+  if (isAddress(raw)) return raw;
+  const name = normalizeName(raw);
+  if (!name) return null;
 
   // ENS lives on mainnet; resolve there regardless of the selected chain.
-  // Primary: a dedicated ENS resolver (covers names Blockscout search misses).
+  // Two independent resolvers race; the first real address wins (covers offchain names like *.base.eth).
   try {
-    const res = await fetch(`https://api.ensideas.com/ens/resolve/${encodeURIComponent(name)}`, { headers: { accept: 'application/json' } });
-    if (res.ok) {
-      const d = await res.json();
-      if (d && isAddress(d.address)) return d.address;
-    }
+    return await Promise.any([
+      viaResolver(`https://api.ensideas.com/ens/resolve/${encodeURIComponent(name)}`, (d) => d && d.address),
+      viaResolver(`https://api.ensdata.net/${encodeURIComponent(name)}`, (d) => d && d.address),
+    ]);
   } catch { /* fall through to Blockscout */ }
 
   // Fallback: Blockscout search.
-  const data = await getJSON(`${CHAINS.eth.base}/api/v2/search?q=${encodeURIComponent(q)}`);
+  const data = await getJSON(`${CHAINS.eth.base}/api/v2/search?q=${encodeURIComponent(name)}`);
   const hit = (data?.items || []).find((it) => it.type === 'ens_domain' && it.ens_info?.name?.toLowerCase() === name);
   return hit?.address_hash || hit?.address || null;
 }
@@ -62,7 +91,7 @@ export async function resolveAddress(input, chain = 'eth') {
  * Walk a paginated list endpoint newest -> oldest until items are older than `year`
  * or `maxPages` is reached. Returns { items, complete }.
  */
-export async function paginate(url, { year = YEAR, maxPages = 20, delay = 300, onPage } = {}) {
+export async function paginate(url, { year = YEAR, maxPages = 20, delay = 150, onPage } = {}) {
   const items = [];
   let params = null;
   for (let page = 0; page < maxPages; page++) {
@@ -73,6 +102,8 @@ export async function paginate(url, { year = YEAR, maxPages = 20, delay = 300, o
       data = await getJSON(u.toString());
     } catch (e) {
       if (e instanceof RateLimited) return { items, complete: false, rateLimited: true };
+      // big wallets: keep what we already have instead of failing the whole recap
+      if (items.length) return { items, complete: false };
       throw e;
     }
     const batch = data?.items || [];
@@ -96,18 +127,13 @@ export async function fetchWalletData(address, chain = 'eth', { onProgress, maxP
     ['transfers', `${base}/token-transfers?filter=from`, Math.ceil(maxPages / 2), 'Checking your tokens'],
   ];
   const total = plan.reduce((s, p) => s + p[2], 0);
-  let done = 0;
-  const out = {};
-  for (const [key, url, pages, label] of plan) {
-    onProgress?.(done / total, label);
-    const r = await paginate(url, {
-      maxPages: pages,
-      onPage: (n) => onProgress?.((done + n) / total, label),
-    });
-    done += pages; // count skipped pages as done so the bar ends at 100%
-    out[key] = r;
-    onProgress?.(done / total, label);
-  }
+  const seen = {};
+  const tick = (key, n, label) => { seen[key] = n; const d = Object.values(seen).reduce((a, b) => a + b, 0); onProgress?.(Math.min(1, d / total), label); };
+  onProgress?.(0, plan[0][3]);
+  // the three lists come from different endpoints, so they load side by side
+  const results = await Promise.all(plan.map(([key, url, pages, label]) =>
+    paginate(url, { maxPages: pages, onPage: (n) => tick(key, n, label) }).then((r) => { tick(key, pages, label); return [key, r]; })));
+  const out = Object.fromEntries(results);
   return {
     sentTxs: out.sent.items,
     sentComplete: out.sent.complete,

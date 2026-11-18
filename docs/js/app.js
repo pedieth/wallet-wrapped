@@ -1,4 +1,4 @@
-import { CHAINS, resolveAddress, fetchWalletData } from './api.js';
+import { CHAINS, resolveAddress, fetchWalletData } from './api.js?v=3';
 import { computeRecap, shareText, shortAddr, isAddress } from './stats.js';
 import { drawCard } from './card.js';
 
