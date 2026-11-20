@@ -66,6 +66,13 @@ async function viaResolver(url, pick) {
   return a;
 }
 
+async function isContract(a) {
+  try {
+    const d = await getJSON(`${CHAINS.eth.base}/api/v2/addresses/${a}`, { retries: 1 });
+    return d?.is_contract !== false;
+  } catch { return true; } // unsure: safer to say "no wallet" than show someone else's year
+}
+
 export async function resolveAddress(input, chain = 'eth') {
   const raw = String(input || '').trim();
   if (isAddress(raw)) return raw;
@@ -85,14 +92,19 @@ export async function resolveAddress(input, chain = 'eth') {
   // use the wrapped owner, then the owner, so "name not found" only happens for names that really don't exist.
   try {
     const d = await getJSON(`https://bens.services.blockscout.com/api/v1/1/domains/${encodeURIComponent(name)}`, { retries: 1 });
-    const a = d?.resolved_address?.hash || d?.wrapped_owner?.hash || d?.owner?.hash;
-    if (isAddress(a)) return a;
+    if (isAddress(d?.resolved_address?.hash)) return d.resolved_address.hash;
+    // an owner that is a contract (a custody or "graveyard" contract, a vault) is not the person; never show its stats
+    for (const a of [d?.wrapped_owner?.hash, d?.owner?.hash]) {
+      if (isAddress(a) && !(await isContract(a))) return a;
+    }
+    return null;
   } catch { /* fall through */ }
 
   // Fallback: Blockscout search.
   const data = await getJSON(`${CHAINS.eth.base}/api/v2/search?q=${encodeURIComponent(name)}`);
   const hit = (data?.items || []).find((it) => it.type === 'ens_domain' && it.ens_info?.name?.toLowerCase() === name);
-  return hit?.address_hash || hit?.address || null;
+  const h = hit?.address_hash || hit?.address;
+  return isAddress(h) && !(await isContract(h)) ? h : null;
 }
 
 /**
