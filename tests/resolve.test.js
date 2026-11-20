@@ -21,9 +21,13 @@ test('big wallets keep partial data instead of failing', () => {
 test('lists load in parallel', () => assert.match(api, /await Promise\.all\(plan\.map/));
 test('names with no address record fall back to the BENS owner (2026-11-20)', () => {
   assert.match(api, /bens\.services\.blockscout\.com\/api\/v1\/1\/domains/);
-  assert.match(api, /wrapped_owner\?\.hash \|\| d\?\.owner\?\.hash/);
+  assert.match(api, /\[d\?\.wrapped_owner\?\.hash, d\?\.owner\?\.hash\]/);
 });
 test('Gnosis stays removed, Robinhood stays in (2026-11-20)', () => {
   assert.doesNotMatch(api, /gnosis/i);
   assert.match(api, /robinhoodchain\.blockscout\.com/);
+});
+test('a contract owner (e.g. ENS Graveyard 0xDa02…B7F6) is never used as the wallet (2026-11-20)', () => {
+  assert.match(api, /!\(await isContract\(a\)\)/);
+  assert.match(api, /is_contract !== false/);
 });
