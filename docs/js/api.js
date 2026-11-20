@@ -7,7 +7,7 @@ export const CHAINS = {
   arbitrum: { name: 'Arbitrum', symbol: 'ETH', guzzler: 0.01, base: 'https://arbitrum.blockscout.com', explorer: 'https://arbitrum.blockscout.com' },
   optimism: { name: 'Optimism', symbol: 'ETH', guzzler: 0.01, base: 'https://explorer.optimism.io', explorer: 'https://explorer.optimism.io' },
   polygon: { name: 'Polygon', symbol: 'POL', guzzler: 50, base: 'https://polygon.blockscout.com', explorer: 'https://polygon.blockscout.com' },
-  gnosis: { name: 'Gnosis', symbol: 'xDAI', guzzler: 5, base: 'https://gnosisscan.io', explorer: 'https://gnosisscan.io' },
+  robinhood: { name: 'Robinhood Chain', symbol: 'ETH', guzzler: 0.01, base: 'https://robinhoodchain.blockscout.com', explorer: 'https://robinhoodchain.blockscout.com' },
 };
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
