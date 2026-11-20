@@ -113,3 +113,8 @@ test('spam tokens are filtered', async () => {
   assert.equal(isSpamToken({ symbol: 'USDC', name: 'USD Coin' }), false);
   assert.equal(isSpamToken({ symbol: 'POOL', name: 'PoolTogether' }), false);
 });
+
+test('tokens left but no own tx is not a Ghost (2026-11-20)', () => {
+  assert.equal(persona({ sentCount: 0, gasWei: '0', distinctTokens: 3, distinctCounterparties: 0 }).label, 'Quiet Mover');
+  assert.equal(persona({ sentCount: 0, gasWei: '0', distinctTokens: 0, distinctCounterparties: 0 }).label, 'Ghost');
+});
