@@ -1,5 +1,5 @@
-import { CHAINS, resolveAddress, fetchWalletData } from './api.js?v=4';
-import { computeRecap, shareText, shortAddr, isAddress } from './stats.js';
+import { CHAINS, resolveAddress, fetchWalletData } from './api.js?v=5';
+import { computeRecap, shareText, shortAddr, isAddress } from './stats.js?v=5';
 import { drawCard } from './card.js';
 
 const SITE = 'https://pedieth.github.io/wallet-wrapped/';

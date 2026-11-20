@@ -1,5 +1,5 @@
 // Tiny Blockscout v2 client. Uses global fetch (browser or Node 18+).
-import { YEAR, isAddress } from './stats.js';
+import { YEAR, isAddress } from './stats.js?v=5';
 
 export const CHAINS = {
   eth: { name: 'Ethereum', symbol: 'ETH', guzzler: 0.25, base: 'https://eth.blockscout.com', explorer: 'https://eth.blockscout.com' },
@@ -81,6 +81,14 @@ export async function resolveAddress(input, chain = 'eth') {
     ]);
   } catch { /* fall through to Blockscout */ }
 
+  // Blockscout's name service (BENS). Names with no address record set still have an owner wallet:
+  // use the wrapped owner, then the owner, so "name not found" only happens for names that really don't exist.
+  try {
+    const d = await getJSON(`https://bens.services.blockscout.com/api/v1/1/domains/${encodeURIComponent(name)}`, { retries: 1 });
+    const a = d?.resolved_address?.hash || d?.wrapped_owner?.hash || d?.owner?.hash;
+    if (isAddress(a)) return a;
+  } catch { /* fall through */ }
+
   // Fallback: Blockscout search.
   const data = await getJSON(`${CHAINS.eth.base}/api/v2/search?q=${encodeURIComponent(name)}`);
   const hit = (data?.items || []).find((it) => it.type === 'ens_domain' && it.ens_info?.name?.toLowerCase() === name);
@@ -119,7 +127,7 @@ export async function paginate(url, { year = YEAR, maxPages = 20, delay = 150, o
 }
 
 /** Fetch everything the recap needs. onProgress(fraction, label). */
-export async function fetchWalletData(address, chain = 'eth', { onProgress, maxPages = 20 } = {}) {
+export async function fetchWalletData(address, chain = 'eth', { onProgress, maxPages = 40 } = {}) {
   const base = `${CHAINS[chain].base}/api/v2/addresses/${address}`;
   const plan = [
     ['sent', `${base}/transactions?filter=from`, maxPages, 'Reading your transactions'],

@@ -151,7 +151,8 @@ export function isSpamToken(token = {}) {
 export function persona(r) {
   const gas = Number(formatEth(r.gasWei || 0, 6).replace('<', ''));
   const sent = r.sentCount || 0;
-  if (sent === 0) return { label: 'Ghost', blurb: 'Not a single outgoing tx this year. Silent, patient, unbothered.' };
+  if (sent === 0 && !(r.distinctTokens > 0)) return { label: 'Ghost', blurb: 'Not a single outgoing tx this year. Silent, patient, unbothered.' };
+  if (sent === 0) return { label: 'Quiet Mover', blurb: 'No transactions of your own, yet tokens still left the wallet. Apps did the clicking.' };
   if (sent >= 500 || (sent >= 200 && r.distinctTokens >= 15)) return { label: 'Degen', blurb: 'You clicked "confirm" more than most people blink.' };
   if (gas >= (r.guzzler ?? 0.25)) return { label: 'Gas Guzzler', blurb: 'Validators thank you for your service.' };
   if (r.distinctCounterparties >= 25) return { label: 'Explorer', blurb: 'New contract, who dis? You got around.' };
