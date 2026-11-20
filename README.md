@@ -1,6 +1,6 @@
 # Wallet Wrapped
 
-Spotify Wrapped, but for your wallet. Paste an address (or an ENS name), pick a chain (Ethereum, Base, Arbitrum, Optimism, Polygon or Gnosis), and flip through your 2026 on-chain year: transactions, gas burned, busiest day and month, the tokens you moved most, the contract you kept going back to, and a persona. The last slide is a share card you can download or post.
+Spotify Wrapped, but for your wallet. Paste an address (or an ENS name), pick a chain (Ethereum, Base, Arbitrum, Optimism, Polygon or Robinhood Chain), and flip through your 2026 on-chain year: transactions, gas burned, busiest day and month, the tokens you moved most, the contract you kept going back to, and a persona. The last slide is a share card you can download or post.
 
 Site: https://pedieth.github.io/wallet-wrapped/
 
@@ -8,7 +8,7 @@ It's a static page. No backend, no wallet connect, no API keys.
 
 ## How it works
 
-Everything runs in the browser against the public [Blockscout](https://www.blockscout.com/) v2 API (`eth.blockscout.com`, `base.blockscout.com`, `arbitrum.blockscout.com`, `explorer.optimism.io`, `polygon.blockscout.com`, `gnosisscan.io`):
+Everything runs in the browser against the public [Blockscout](https://www.blockscout.com/) v2 API (`eth.blockscout.com`, `base.blockscout.com`, `arbitrum.blockscout.com`, `explorer.optimism.io`, `polygon.blockscout.com`, `robinhoodchain.blockscout.com`):
 
 - `/addresses/{addr}/transactions?filter=from` — txs you sent. Gas, busiest day/month, top counterparty and first tx come from these.
 - `/addresses/{addr}/transactions` — everything that touched the address, for the total count.
@@ -21,7 +21,7 @@ All the number crunching lives in `docs/js/stats.js` as pure functions, so it's 
 
 Persona rules (first match wins): Ghost (no sent txs) → Degen (500+ sent, or 200+ with 15+ tokens) → Gas Guzzler (≥0.25 ETH gas) → Explorer (25+ distinct counterparties) → Diamond Hands (≤10 sent) → Token Collector (8+ tokens) → Steady Stacker.
 
-Shareable links: `?address=0x…&chain=eth` (or `base`, `arbitrum`, `optimism`, `polygon`, `gnosis`, or an ENS name as the address).
+Shareable links: `?address=0x…&chain=eth` (or `base`, `arbitrum`, `optimism`, `polygon`, `robinhood`, or an ENS name as the address).
 
 ## Run locally
 
